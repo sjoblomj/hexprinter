@@ -7,32 +7,32 @@ using namespace std;
 
 const int max_size = 64 * 1024;
 
-string print_address(int offsetdigits, int offset) {
+string print_address(int addresslength, int offset) {
     stringstream ss;
-    ss << setw(offsetdigits) << setfill('0') << uppercase << hex << offset/16 << "0: ";
+    ss << setw(addresslength) << setfill('0') << uppercase << hex << offset/16 << "0: ";
     return ss.str();
 }
 
-void printhex(int len, unsigned char* filecontent, int offset) {
+void printhex(unsigned char* filecontent, int start_offset, int end_offset) {
 
     char hexstr[10]; // Array to store hexadecimal string
-    sprintf(hexstr, "%X", len - 1);
-    int offsetdigits = 0;
-    while (hexstr[offsetdigits] != '\0') {
-        ++offsetdigits;
+    sprintf(hexstr, "%X", end_offset - 1);
+    int addresslength = 0;
+    while (hexstr[addresslength] != '\0') {
+        ++addresslength;
     }
-    offsetdigits--;
+    addresslength--;
 
     stringstream ss;
     string asciireps = "";
     string hexout = "";
-    for (int i = 0; i < offsetdigits; i++)
+    for (int i = 0; i < addresslength; i++)
         hexout += " ";
     hexout += "    0 1  2 3  4 5  6 7  8 9  A B  C D  E F";
-    if (offset % 16 != 0) {
+    if (start_offset % 16 != 0) {
         cout << hexout << endl;
-        hexout = print_address(offsetdigits, offset);
-        int digits_to_skip = offset - (offset / 16) * 16;
+        hexout = print_address(addresslength, start_offset);
+        int digits_to_skip = start_offset - (start_offset / 16) * 16;
         for (int i = 0; i < digits_to_skip; i++) {
             hexout += "  ";
             asciireps += " ";
@@ -41,10 +41,10 @@ void printhex(int len, unsigned char* filecontent, int offset) {
         }
     }
 
-    for (int i = offset; i < len; i++) {
+    for (int i = start_offset; i < end_offset; i++) {
         if (i % 16 == 0) {
             cout << hexout << "    " << asciireps << endl;
-            hexout = print_address(offsetdigits, i) + " ";
+            hexout = print_address(addresslength, i) + " ";
             asciireps = "";
         } else if (i % 2 == 0) {
             hexout += " ";
@@ -56,10 +56,7 @@ void printhex(int len, unsigned char* filecontent, int offset) {
         asciireps += (isprint(filecontent[i]) ? filecontent[i] : '.');
     }
 
-    size_t pos = hexout.length();
-    if (pos == string::npos)
-        pos = 0;
-    for (int i = pos + 1; i < 48 + offsetdigits; i++)
+    for (int i = hexout.length() + 1; i < 48 + addresslength; i++)
         hexout += ' ';
 
     cout << hexout << asciireps << endl;
@@ -110,7 +107,7 @@ int main(int argc, char **argv) {
 
     if (start_index > 0)
         cout << "<Content cut off> ..." << endl;
-    printhex(size, content, start_index);
+    printhex(content, start_index, size);
     if (size < filelen)
         cout << "... <Content cut off>";
     cout << endl;
